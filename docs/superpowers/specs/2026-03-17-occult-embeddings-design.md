@@ -62,7 +62,7 @@ o-culty/
 ### Sources
 
 - **sacred-texts.com** -- HTML scraping. Crawl index pages per tradition, follow links to full texts, save raw HTML. Rate-limited (1.5s delay).
-- **Internet Archive** -- `internetarchive` Python package. Search and download occult/esoteric texts. Prioritize PDF and DjVu. Up to 50 results per search term.
+- **Internet Archive** -- `internetarchive` Python package. Search and download occult/esoteric texts. Prioritize PDF and plaintext. Up to 50 results per search term.
 - **Project Gutenberg** -- Mirror/API for public domain plaintext.
 
 ### Search Terms / Traditions
@@ -83,6 +83,31 @@ hermetic, kabbalah, kabbalistic, alchemy, alchemical, grimoire, enochian, rosicr
 - Respects robots.txt
 - Config-driven: traditions, search terms, delays all in `config.yaml`
 
+### Deduplication
+
+The same texts appear across multiple sources (e.g., Corpus Hermeticum on sacred-texts.com, Internet Archive, and Gutenberg). Dedup happens at the processing stage:
+
+- **Title/author fuzzy matching** via normalized title strings + Levenshtein distance. Threshold: 85% similarity flags a potential duplicate.
+- When duplicates are found, prefer the highest-quality version (plaintext > clean HTML > OCR'd PDF). Mark alternates in metadata as `duplicate_of`.
+- The manifest tracks canonical text IDs so downstream stages only process unique texts.
+
+### Error Handling
+
+All pipeline stages follow the same pattern: log failures to `data/errors/{stage}.jsonl`, skip the failed item, continue processing. Each error entry includes timestamp, source, item ID, error type, and traceback.
+
+- **Scraping:** Retry transient HTTP errors (429, 5xx) up to 3 times with exponential backoff. Log and skip persistent failures (404, corrupt downloads). Partial downloads are deleted and retried on next run.
+- **Processing:** Log and skip corrupt PDFs or OCR failures. The item is marked `failed` in the manifest so it can be retried manually.
+- **Chunking/Embedding:** Failures at this stage are rare (data is already clean text). Log and skip any that occur.
+
+### sacred-texts.com Crawl Strategy
+
+The site is organized as: top-level tradition index pages (e.g., `/eso/`, `/grim/`, `/alc/`) linking to book index pages, which link to individual chapter pages. The scraper:
+
+1. Starts at each tradition's index page
+2. Discovers all book-level pages linked from the index
+3. For multi-chapter texts, fetches all chapter pages and saves them individually (concatenation happens at the processing stage)
+4. Uses the site's own categorization as the primary tradition tag
+
 ## Processing & OCR Layer
 
 ### Text Extraction
@@ -97,7 +122,7 @@ hermetic, kabbalah, kabbalistic, alchemy, alchemical, grimoire, enochian, rosicr
 - Normalize Unicode (NFKC)
 - Strip page numbers, headers/footers, OCR artifacts
 - Normalize whitespace
-- Detect and tag language (some texts have Latin, Hebrew, Greek passages)
+- Detect and tag language via `langdetect` (some texts have Latin, Hebrew, Greek passages)
 - Preserve paragraph and chapter boundaries as structural markers
 
 ### Output Per Text
@@ -124,14 +149,14 @@ Cleaned `.txt` file plus JSON sidecar:
 ## Chunking Strategy
 
 - Chapter-aware: split on chapter/section boundaries first
-- Within chapters: sliding window, ~512 tokens, ~64 token overlap
+- Within chapters: sliding window, ~512 tokens, ~64 token overlap (token counting uses the embedding model's HuggingFace tokenizer for accurate boundaries)
 - Short chapters (< 512 tokens) stay as single chunks
 - Each chunk inherits parent metadata plus: `chunk_id`, `chapter`, `position_in_chapter`, raw text
 - Storage: one parquet file per source text
 
 ## Embedding Layer
 
-- **Model:** `nomic-ai/nomic-embed-text-v1.5` (768 dims, 8192 token context, Matryoshka support)
+- **Model:** `nomic-ai/nomic-embed-text-v1.5` (768 dims, 8192 token context)
 - Configurable in `config.yaml` -- swap to BGE, E5, etc. without code changes
 - Batch embed via sentence-transformers
 - **Device priority:** MPS (Apple Silicon) -> CUDA -> CPU
@@ -140,12 +165,19 @@ Cleaned `.txt` file plus JSON sidecar:
 
 ```
 data/embeddings/
-├── vectors.npy              # (N, 768) float32 array, all chunks
+├── by_source/               # per-source .npy files for incremental updates
+│   ├── sacred-texts_hermetic_corpus-hermeticum.npy
+│   └── ...
+├── vectors.npy              # concatenated (N, 768) float32 array
 ├── metadata.parquet         # chunk_id, text, title, tradition, chapter, etc.
 └── model_info.json          # model name, dimensions, date generated
 ```
 
-Single flat files for full-corpus analysis. Metadata parquet supports slicing by tradition, author, text, etc.
+Per-source `.npy` files allow incremental embedding (only re-embed new/changed texts). A concatenation step produces the full `vectors.npy` for analysis. Metadata parquet supports slicing by tradition, author, text, etc.
+
+### Corpus Size Estimate
+
+Expect 500-2000 texts, ~2-5GB raw data, ~200-500MB embeddings. Comfortably fits in memory on a modern Mac for brute-force search. If the corpus grows beyond this, add a FAISS index as an optimization.
 
 ## Analysis Layer
 
@@ -196,7 +228,7 @@ scraping:
     enabled: true
     search_terms: [occult, hermetic, alchemy, grimoire, kabbalah, theurgy, enochian, esoteric]
     max_results_per_term: 50
-    formats: [pdf, txt, djvu]
+    formats: [pdf, txt]
   gutenberg:
     enabled: true
     search_terms: [occult, alchemy, hermetic, magic]
@@ -233,6 +265,9 @@ analysis:
 - `plotly` -- interactive visualizations
 - `pyyaml` -- config
 - `tqdm` -- progress bars
+- `tokenizers` -- embedding model tokenizer for accurate chunk boundaries
+- `langdetect` -- language detection
+- `python-Levenshtein` -- fuzzy title matching for dedup
 
 ## Future: Phase 2 (Image/Symbol Analysis)
 
