@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=68.0", "setuptools-scm"]
+build-backend = "setuptools.backends._legacy:_Backend"
+
+[project]
+name = "o-culty"
+version = "0.1.0"
+description = "Occult primary source literature scraping and embeddings analysis"
+requires-python = ">=3.11"
+dependencies = [
+    "requests>=2.31",
+    "beautifulsoup4>=4.12",
+    "internetarchive>=4.0",
+    "pymupdf>=1.24",
+    "easyocr>=1.7",
+    "sentence-transformers>=3.0",
+    "numpy>=1.26",
+    "pandas>=2.1",
+    "pyarrow>=14.0",
+    "hdbscan>=0.8",
+    "umap-learn>=0.5",
+    "plotly>=5.18",
+    "pyyaml>=6.0",
+    "tqdm>=4.66",
+    "tokenizers>=0.20",
+    "langdetect>=1.0",
+    "python-Levenshtein>=0.25",
+    "scikit-learn>=1.4",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-cov>=4.1",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
