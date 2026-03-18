@@ -2,6 +2,7 @@ import logging
 from pathlib import Path
 from urllib.parse import urljoin, urlparse
 from bs4 import BeautifulSoup
+from tqdm import tqdm
 from src.scraper.base import BaseScraper
 from src.utils import log_error
 
@@ -43,7 +44,7 @@ class SacredTextsScraper(BaseScraper):
         return links
 
     def scrape(self) -> None:
-        for tradition in self.traditions:
+        for tradition in tqdm(self.traditions, desc="sacred-texts traditions"):
             path = TRADITION_PATHS.get(tradition)
             if path is None:
                 logger.warning(f"Unknown tradition: {tradition}, skipping")
@@ -58,8 +59,7 @@ class SacredTextsScraper(BaseScraper):
             log_error("scraping", self.name, tradition, ConnectionError(f"Failed to fetch {index_url}"))
             return
         book_urls = self.parse_tradition_index(resp.text, index_url)
-        logger.info(f"Found {len(book_urls)} books for {tradition}")
-        for book_url in book_urls:
+        for book_url in tqdm(book_urls, desc=f"  {tradition} books", leave=False):
             book_id = self._url_to_id(book_url, tradition)
             if self.is_downloaded(book_id):
                 continue
@@ -84,6 +84,7 @@ class SacredTextsScraper(BaseScraper):
             chapter_file = book_dir / f"chapter_{i:03d}.html"
             chapter_file.write_text(chapter_resp.text, encoding="utf-8")
         self.mark_downloaded(book_id, {"title": book_id.split("/")[-1], "tradition": tradition, "source_url": book_url, "chapters": len(chapter_urls), "file_type": "html"})
+        logger.info(f"Downloaded: {book_id} ({len(chapter_urls)} chapters)")
 
     def _url_to_id(self, url: str, tradition: str) -> str:
         parsed = urlparse(url)

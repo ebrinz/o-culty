@@ -1,6 +1,7 @@
 import logging
 from pathlib import Path
 from bs4 import BeautifulSoup
+from tqdm import tqdm
 from src.scraper.base import BaseScraper
 from src.utils import log_error
 
@@ -29,7 +30,7 @@ class GutenbergScraper(BaseScraper):
         return results
 
     def scrape(self) -> None:
-        for term in self.search_terms:
+        for term in tqdm(self.search_terms, desc="gutenberg terms"):
             self._scrape_term(term)
 
     def _scrape_term(self, term: str) -> None:
@@ -42,7 +43,7 @@ class GutenbergScraper(BaseScraper):
             return
         results = self.parse_search_results(resp.text)
         logger.info(f"Found {len(results)} results for '{term}'")
-        for result in results:
+        for result in tqdm(results, desc=f"  '{term}' books", leave=False):
             ebook_id = result["ebook_id"]
             if self.is_downloaded(ebook_id):
                 continue
@@ -58,3 +59,4 @@ class GutenbergScraper(BaseScraper):
         out_file = self.output_dir / f"{ebook_id}.txt"
         out_file.write_text(resp.text, encoding="utf-8")
         self.mark_downloaded(ebook_id, {"title": metadata.get("title", ebook_id), "author": metadata.get("author", "unknown"), "source_url": f"https://www.gutenberg.org/ebooks/{ebook_id}", "file_type": "txt"})
+        logger.info(f"Downloaded: {ebook_id} - {metadata.get('title', '')}")

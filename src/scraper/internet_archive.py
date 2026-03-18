@@ -1,6 +1,7 @@
 import logging
 from pathlib import Path
 import internetarchive as ia
+from tqdm import tqdm
 from src.scraper.base import BaseScraper
 from src.utils import log_error
 
@@ -17,7 +18,7 @@ class InternetArchiveScraper(BaseScraper):
         return f"{term} AND mediatype:texts"
 
     def scrape(self) -> None:
-        for term in self.search_terms:
+        for term in tqdm(self.search_terms, desc="internet-archive terms"):
             self._scrape_term(term)
 
     def _scrape_term(self, term: str) -> None:
@@ -29,15 +30,21 @@ class InternetArchiveScraper(BaseScraper):
             log_error("scraping", self.name, term, e)
             return
         count = 0
+        pbar = tqdm(desc=f"  '{term}' items", total=self.max_results_per_term, leave=False)
         for result in results:
             if count >= self.max_results_per_term:
                 break
             item_id = result["identifier"]
             if self.is_downloaded(item_id):
+                pbar.update(1)
+                pbar.set_postfix_str(f"skip: {item_id[:30]}")
                 count += 1
                 continue
             self._download_item(item_id)
+            pbar.update(1)
+            pbar.set_postfix_str(f"{item_id[:30]}")
             count += 1
+        pbar.close()
 
     def _download_item(self, item_id: str) -> None:
         self.rate_limit()
@@ -58,6 +65,7 @@ class InternetArchiveScraper(BaseScraper):
             if downloaded_files:
                 metadata = item.metadata or {}
                 self.mark_downloaded(item_id, {"title": metadata.get("title", item_id), "author": metadata.get("creator", "unknown"), "source_url": f"https://archive.org/details/{item_id}", "files": downloaded_files, "file_type": "mixed"})
+                logger.info(f"Downloaded: {item_id} ({len(downloaded_files)} files)")
             else:
                 self.mark_failed(item_id, "No matching files found")
         except Exception as e:
