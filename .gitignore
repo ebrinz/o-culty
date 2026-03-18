@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Data (large files, generated)
+data/raw/
+data/processed/
+data/chunks/
+data/embeddings/
+data/results/
+data/errors/
+
+# Keep directory structure
+!data/**/.gitkeep
+
+# Environment
+.env
+.venv/
+venv/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Models (downloaded at runtime)
+models/
