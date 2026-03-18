@@ -39,3 +39,15 @@ def test_log_error_appends(tmp_path):
     log_file = tmp_path / "scraping.jsonl"
     lines = log_file.read_text().strip().split("\n")
     assert len(lines) == 2
+
+
+from src.utils import get_device
+
+
+def test_get_device_auto():
+    device = get_device("auto")
+    assert device in ("mps", "cuda", "cpu")
+
+
+def test_get_device_explicit():
+    assert get_device("cpu") == "cpu"

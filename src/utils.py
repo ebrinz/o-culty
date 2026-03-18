@@ -3,6 +3,7 @@ import json
 import traceback
 from datetime import datetime, timezone
 import yaml
+import torch
 
 
 def load_config(path: Path | None = None) -> dict:
@@ -30,3 +31,13 @@ def log_error(stage: str, source: str, item_id: str, error: Exception, errors_di
     }
     with open(errors_dir / f"{stage}.jsonl", "a") as f:
         f.write(json.dumps(entry) + "\n")
+
+
+def get_device(device_config: str = "auto") -> str:
+    if device_config != "auto":
+        return device_config
+    if torch.backends.mps.is_available():
+        return "mps"
+    if torch.cuda.is_available():
+        return "cuda"
+    return "cpu"
