@@ -15,3 +15,27 @@ def test_load_config_returns_dict(tmp_path):
 def test_load_config_missing_file():
     with pytest.raises(FileNotFoundError):
         load_config(Path("/nonexistent/config.yaml"))
+
+
+import json
+from src.utils import log_error
+
+
+def test_log_error_creates_jsonl(tmp_path):
+    log_error(stage="scraping", source="sacred-texts", item_id="test-item", error=ValueError("test error"), errors_dir=tmp_path)
+    log_file = tmp_path / "scraping.jsonl"
+    assert log_file.exists()
+    entry = json.loads(log_file.read_text().strip())
+    assert entry["stage"] == "scraping"
+    assert entry["source"] == "sacred-texts"
+    assert entry["item_id"] == "test-item"
+    assert entry["error_type"] == "ValueError"
+    assert "test error" in entry["traceback"]
+
+
+def test_log_error_appends(tmp_path):
+    log_error("scraping", "src1", "id1", ValueError("e1"), errors_dir=tmp_path)
+    log_error("scraping", "src2", "id2", ValueError("e2"), errors_dir=tmp_path)
+    log_file = tmp_path / "scraping.jsonl"
+    lines = log_file.read_text().strip().split("\n")
+    assert len(lines) == 2
