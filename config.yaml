@@ -1,0 +1,31 @@
+scraping:
+  sacred_texts:
+    enabled: true
+    traditions: [hermetic, kabbalah, alchemy, grimoire, enochian, rosicrucian, thelema, gnostic]
+    delay_seconds: 1.5
+  internet_archive:
+    enabled: true
+    search_terms: [occult, hermetic, alchemy, grimoire, kabbalah, theurgy, enochian, esoteric]
+    max_results_per_term: 50
+    formats: [pdf, txt]
+  gutenberg:
+    enabled: true
+    search_terms: [occult, alchemy, hermetic, magic]
+
+processing:
+  ocr_engine: easyocr
+  ocr_languages: [en, la]
+
+chunking:
+  chunk_size_tokens: 512
+  overlap_tokens: 64
+
+embedding:
+  model: nomic-ai/nomic-embed-text-v1.5
+  batch_size: 64
+  device: auto
+
+analysis:
+  umap_n_neighbors: 15
+  umap_min_dist: 0.1
+  hdbscan_min_cluster_size: 10
