@@ -15,15 +15,27 @@ scraping:
 processing:
   ocr_engine: easyocr
   ocr_languages: [en, la]
+  quality_gate:
+    min_text_length: 200
+    max_garbled_ratio: 0.10
 
 chunking:
-  chunk_size_tokens: 512
-  overlap_tokens: 64
+  search:
+    chunk_size_tokens: 512
+    overlap_tokens: 64
+  cluster:
+    chunk_size_tokens: 2048
+    overlap_tokens: 128
 
 embedding:
-  model: nomic-ai/nomic-embed-text-v1.5
-  batch_size: 64
-  device: auto
+  search:
+    model: BAAI/bge-en-icl
+    batch_size: 32
+    device: auto
+  cluster:
+    model: nomic-ai/nomic-embed-text-v1.5
+    batch_size: 64
+    device: auto
 
 analysis:
   umap_n_neighbors: 15

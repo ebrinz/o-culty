@@ -1,5 +1,5 @@
 import pytest
-from src.processor.cleaner import normalize_text, detect_language, is_duplicate, normalize_title
+from src.processor.cleaner import normalize_text, detect_language, is_duplicate, normalize_title, is_garbled
 
 def test_normalize_unicode():
     assert "fi" in normalize_text("ﬁrst")
@@ -33,3 +33,15 @@ def test_is_duplicate_fuzzy():
 
 def test_is_not_duplicate():
     assert is_duplicate("the corpus hermeticum", "the key of solomon") is False
+
+
+def test_is_garbled_clean_text():
+    assert is_garbled("This is perfectly normal English text about alchemy.") is False
+
+
+def test_is_garbled_broken_encoding():
+    assert is_garbled("TH£ BOOK Of TR£ASVR£ SP1R1TS ¬ »«®© £¬|»« ®©™") is True
+
+
+def test_is_garbled_empty():
+    assert is_garbled("") is True

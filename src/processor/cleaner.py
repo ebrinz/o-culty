@@ -44,3 +44,16 @@ def is_duplicate(title_a: str, title_b: str, threshold: float = 0.85) -> bool:
     a = normalize_title(title_a)
     b = normalize_title(title_b)
     return levenshtein_ratio(a, b) >= threshold
+
+
+def is_garbled(text: str, max_ratio: float = 0.10) -> bool:
+    """Check if extracted text is garbled (broken font encoding, OCR garbage).
+
+    Looks at ratio of non-printable / unusual characters. Garbled PDFs with
+    broken font mappings produce text like 'OFDLAD' instead of 'OF DEAD'.
+    """
+    if not text:
+        return True
+    sample = text[:2000]
+    weird = sum(1 for c in sample if ord(c) > 127 or c in "£¬|»«®©™{}[]<>\\^~`")
+    return (weird / len(sample)) > max_ratio
