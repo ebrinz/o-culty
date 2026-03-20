@@ -1,0 +1,248 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 340" width="1200" height="340">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#06060c"/>
+      <stop offset="30%" style="stop-color:#0a0a18"/>
+      <stop offset="70%" style="stop-color:#0c0816"/>
+      <stop offset="100%" style="stop-color:#06060c"/>
+    </linearGradient>
+    <radialGradient id="orb-left" cx="15%" cy="50%" r="30%">
+      <stop offset="0%" style="stop-color:#2d1b69" stop-opacity="0.25"/>
+      <stop offset="100%" style="stop-color:transparent" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="orb-right" cx="85%" cy="40%" r="25%">
+      <stop offset="0%" style="stop-color:#1b3d69" stop-opacity="0.2"/>
+      <stop offset="100%" style="stop-color:transparent" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="orb-center" cx="50%" cy="45%" r="20%">
+      <stop offset="0%" style="stop-color:#4a1942" stop-opacity="0.15"/>
+      <stop offset="100%" style="stop-color:transparent" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="glow-sm">
+      <feGaussianBlur stdDeviation="2" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="glow-lg">
+      <feGaussianBlur stdDeviation="6" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="glow-title">
+      <feGaussianBlur stdDeviation="4" result="b"/>
+      <feColorMatrix in="b" type="matrix" values="1.2 0 0 0 0  0 0.8 0 0 0  0 0 1.5 0 0  0 0 0 1 0" result="colored"/>
+      <feMerge><feMergeNode in="colored"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <!-- Animated-look matrix pattern -->
+    <pattern id="mx1" width="18" height="22" patternUnits="userSpaceOnUse">
+      <text x="1" y="16" font-family="monospace" font-size="14" fill="#0f1f0f" opacity="0.5">0</text>
+    </pattern>
+    <pattern id="mx2" width="22" height="19" patternUnits="userSpaceOnUse" patternTransform="rotate(3)">
+      <text x="2" y="14" font-family="monospace" font-size="12" fill="#0f0f1f" opacity="0.4">1</text>
+    </pattern>
+    <pattern id="mx3" width="30" height="26" patternUnits="userSpaceOnUse" patternTransform="rotate(-2)">
+      <text x="4" y="18" font-family="monospace" font-size="11" fill="#1a0f1a" opacity="0.3">x</text>
+    </pattern>
+    <clipPath id="clip-all"><rect width="1200" height="340"/></clipPath>
+  </defs>
+
+  <g clip-path="url(#clip-all)">
+
+  <!-- Deep background -->
+  <rect width="1200" height="340" fill="url(#bg)"/>
+  <rect width="1200" height="340" fill="url(#mx1)" opacity="0.6"/>
+  <rect width="1200" height="340" fill="url(#mx2)" opacity="0.5"/>
+  <rect width="1200" height="340" fill="url(#mx3)" opacity="0.4"/>
+
+  <!-- Ambient orbs -->
+  <rect width="1200" height="340" fill="url(#orb-left)"/>
+  <rect width="1200" height="340" fill="url(#orb-right)"/>
+  <rect width="1200" height="340" fill="url(#orb-center)"/>
+
+  <!-- Outer ritual circle -->
+  <g transform="translate(600, 165)" opacity="0.06" stroke="#9b6dff" stroke-width="0.6" fill="none">
+    <circle r="155"/>
+    <circle r="150"/>
+    <!-- Degree marks -->
+    <g stroke-width="0.4">
+      <line x1="0" y1="-150" x2="0" y2="-155"/>
+      <line x1="75" y1="-129.9" x2="77.5" y2="-134.2"/>
+      <line x1="129.9" y1="-75" x2="134.2" y2="-77.5"/>
+      <line x1="150" y1="0" x2="155" y2="0"/>
+      <line x1="129.9" y1="75" x2="134.2" y2="77.5"/>
+      <line x1="75" y1="129.9" x2="77.5" y2="134.2"/>
+      <line x1="0" y1="150" x2="0" y2="155"/>
+      <line x1="-75" y1="129.9" x2="-77.5" y2="134.2"/>
+      <line x1="-129.9" y1="75" x2="-134.2" y2="77.5"/>
+      <line x1="-150" y1="0" x2="-155" y2="0"/>
+      <line x1="-129.9" y1="-75" x2="-134.2" y2="-77.5"/>
+      <line x1="-75" y1="-129.9" x2="-77.5" y2="-134.2"/>
+    </g>
+  </g>
+
+  <!-- Alchemical matrix columns - left side -->
+  <g opacity="0.12" font-family="monospace" font-size="11">
+    <!-- SOLVE -->
+    <text x="45" y="25" fill="#3d8b3d">S</text><text x="45" y="45" fill="#3a853a">O</text><text x="45" y="65" fill="#378037">L</text><text x="45" y="85" fill="#347a34">V</text><text x="45" y="105" fill="#317531">E</text>
+    <!-- VITRIOL -->
+    <text x="95" y="40" fill="#4a7a4a">V</text><text x="95" y="60" fill="#477547">I</text><text x="95" y="80" fill="#447044">T</text><text x="95" y="100" fill="#416b41">R</text><text x="95" y="120" fill="#3e663e">I</text><text x="95" y="140" fill="#3b613b">O</text><text x="95" y="160" fill="#385c38">L</text>
+    <!-- HERMES -->
+    <text x="145" y="55" fill="#3d6b8b">H</text><text x="145" y="75" fill="#3a6585">E</text><text x="145" y="95" fill="#376080">R</text><text x="145" y="115" fill="#345b7a">M</text><text x="145" y="135" fill="#315575">E</text><text x="145" y="155" fill="#2e5070">S</text>
+    <!-- ABRACADABRA descending -->
+    <text x="205" y="15" fill="#5a3d8b">A</text><text x="205" y="35" fill="#553a85">B</text><text x="205" y="55" fill="#503780">R</text><text x="205" y="75" fill="#4b347a">A</text><text x="205" y="95" fill="#463175">C</text><text x="205" y="115" fill="#412e70">A</text><text x="205" y="135" fill="#3c2b6b">D</text><text x="205" y="155" fill="#372866">A</text><text x="205" y="175" fill="#322561">B</text><text x="205" y="195" fill="#2d225c">R</text><text x="205" y="215" fill="#281f57">A</text>
+  </g>
+
+  <!-- Right side columns -->
+  <g opacity="0.12" font-family="monospace" font-size="11">
+    <!-- COAGULA -->
+    <text x="1145" y="30" fill="#3d8b3d">C</text><text x="1145" y="50" fill="#3a853a">O</text><text x="1145" y="70" fill="#378037">A</text><text x="1145" y="90" fill="#347a34">G</text><text x="1145" y="110" fill="#317531">U</text><text x="1145" y="130" fill="#2e702e">L</text><text x="1145" y="150" fill="#2b6b2b">A</text>
+    <!-- AZOTH -->
+    <text x="1095" y="45" fill="#4a7a4a">A</text><text x="1095" y="65" fill="#477547">Z</text><text x="1095" y="85" fill="#447044">O</text><text x="1095" y="105" fill="#416b41">T</text><text x="1095" y="125" fill="#3e663e">H</text>
+    <!-- THOTH -->
+    <text x="1045" y="60" fill="#3d6b8b">T</text><text x="1045" y="80" fill="#3a6585">H</text><text x="1045" y="100" fill="#376080">O</text><text x="1045" y="120" fill="#345b7a">T</text><text x="1045" y="140" fill="#315575">H</text>
+    <!-- TETRAGRAMMATON -->
+    <text x="985" y="20" fill="#5a3d8b">T</text><text x="985" y="40" fill="#553a85">E</text><text x="985" y="60" fill="#503780">T</text><text x="985" y="80" fill="#4b347a">R</text><text x="985" y="100" fill="#463175">A</text><text x="985" y="120" fill="#412e70">G</text><text x="985" y="140" fill="#3c2b6b">R</text><text x="985" y="160" fill="#372866">A</text><text x="985" y="180" fill="#322561">M</text>
+  </g>
+
+  <!-- Inner sigil: Hexagram with planetary symbols -->
+  <g transform="translate(600, 165)" opacity="0.09" stroke="#8b6ddf" stroke-width="0.8" fill="none">
+    <!-- Double hexagram -->
+    <polygon points="0,-80 69.3,40 -69.3,40"/>
+    <polygon points="0,80 69.3,-40 -69.3,-40"/>
+    <!-- Inner heptagram (7-pointed star) -->
+    <polygon points="0,-55 29.4,-17 48.1,21 18.7,49.5 -18.7,49.5 -48.1,21 -29.4,-17" stroke-width="0.5"/>
+    <!-- Circles -->
+    <circle r="90"/>
+    <circle r="60"/>
+    <circle r="30"/>
+    <!-- Planetary cross lines -->
+    <line x1="0" y1="-90" x2="0" y2="90" stroke-width="0.3"/>
+    <line x1="-90" y1="0" x2="90" y2="0" stroke-width="0.3"/>
+    <line x1="-63.6" y1="-63.6" x2="63.6" y2="63.6" stroke-width="0.3"/>
+    <line x1="63.6" y1="-63.6" x2="-63.6" y2="63.6" stroke-width="0.3"/>
+  </g>
+
+  <!-- Small planetary glyphs around the circle -->
+  <g font-family="serif" font-size="14" fill="#5a4a8a" opacity="0.15" text-anchor="middle">
+    <!-- Sun -->
+    <text x="600" y="72">&#x2609;</text>
+    <!-- Moon -->
+    <text x="678" y="95">&#x263D;</text>
+    <!-- Mercury -->
+    <text x="695" y="165">&#x263F;</text>
+    <!-- Venus -->
+    <text x="670" y="240">&#x2640;</text>
+    <!-- Mars -->
+    <text x="600" y="262">&#x2642;</text>
+    <!-- Jupiter -->
+    <text x="530" y="240">&#x2643;</text>
+    <!-- Saturn -->
+    <text x="505" y="165">&#x2644;</text>
+  </g>
+
+  <!-- Wireframe cubes - scattered -->
+  <g opacity="0.07" stroke="#6366f1" stroke-width="0.7" fill="none">
+    <g transform="translate(310, 55) rotate(15)">
+      <rect width="22" height="22"/><rect x="8" y="-8" width="22" height="22"/>
+      <line x1="0" y1="0" x2="8" y2="-8"/><line x1="22" y1="0" x2="30" y2="-8"/>
+      <line x1="22" y1="22" x2="30" y2="14"/><line x1="0" y1="22" x2="8" y2="14"/>
+    </g>
+    <g transform="translate(870, 60) rotate(-10)">
+      <rect width="18" height="18"/><rect x="6" y="-6" width="18" height="18"/>
+      <line x1="0" y1="0" x2="6" y2="-6"/><line x1="18" y1="0" x2="24" y2="-6"/>
+      <line x1="18" y1="18" x2="24" y2="12"/><line x1="0" y1="18" x2="6" y2="12"/>
+    </g>
+    <g transform="translate(340, 265) rotate(8)">
+      <rect width="16" height="16"/><rect x="5" y="-5" width="16" height="16"/>
+      <line x1="0" y1="0" x2="5" y2="-5"/><line x1="16" y1="0" x2="21" y2="-5"/>
+      <line x1="16" y1="16" x2="21" y2="11"/><line x1="0" y1="16" x2="5" y2="11"/>
+    </g>
+    <g transform="translate(850, 260) rotate(-5)">
+      <rect width="20" height="20"/><rect x="7" y="-7" width="20" height="20"/>
+      <line x1="0" y1="0" x2="7" y2="-7"/><line x1="20" y1="0" x2="27" y2="-7"/>
+      <line x1="20" y1="20" x2="27" y2="13"/><line x1="0" y1="20" x2="7" y2="13"/>
+    </g>
+    <g transform="translate(260, 160) rotate(20)">
+      <rect width="12" height="12"/><rect x="4" y="-4" width="12" height="12"/>
+      <line x1="0" y1="0" x2="4" y2="-4"/><line x1="12" y1="0" x2="16" y2="-4"/>
+      <line x1="12" y1="12" x2="16" y2="8"/><line x1="0" y1="12" x2="4" y2="8"/>
+    </g>
+    <g transform="translate(920, 175) rotate(-18)">
+      <rect width="14" height="14"/><rect x="5" y="-5" width="14" height="14"/>
+      <line x1="0" y1="0" x2="5" y2="-5"/><line x1="14" y1="0" x2="19" y2="-5"/>
+      <line x1="14" y1="14" x2="19" y2="9"/><line x1="0" y1="14" x2="5" y2="9"/>
+    </g>
+  </g>
+
+  <!-- Horizontal energy lines -->
+  <line x1="0" y1="168" x2="440" y2="168" stroke="#4a2d7a" stroke-width="0.5" opacity="0.3"/>
+  <line x1="760" y1="168" x2="1200" y2="168" stroke="#4a2d7a" stroke-width="0.5" opacity="0.3"/>
+  <line x1="0" y1="162" x2="420" y2="162" stroke="#2d4a7a" stroke-width="0.3" opacity="0.15"/>
+  <line x1="780" y1="162" x2="1200" y2="162" stroke="#2d4a7a" stroke-width="0.3" opacity="0.15"/>
+
+  <!-- Floating data whispers -->
+  <g font-family="monospace" font-size="7" fill="#2d2d4a" opacity="0.4">
+    <text x="290" y="30">scrape</text>
+    <text x="370" y="290">process</text>
+    <text x="420" y="22">extract</text>
+    <text x="770" y="28">embed</text>
+    <text x="830" y="290">cluster</text>
+    <text x="900" y="22">index</text>
+    <text x="350" y="310">pdf</text>
+    <text x="450" y="305">html</text>
+    <text x="740" y="310">ocr</text>
+    <text x="830" y="305">parquet</text>
+  </g>
+  <g font-family="monospace" font-size="8" fill="#3a2a5a" opacity="0.3">
+    <text x="280" y="145">gutenberg</text>
+    <text x="280" y="195">sacred-texts</text>
+    <text x="840" y="145">internet-archive</text>
+    <text x="870" y="195">6,268 texts</text>
+  </g>
+
+  <!-- Small connecting dots -->
+  <g fill="#6b5b9a" opacity="0.12">
+    <circle cx="320" cy="90" r="2"/>
+    <circle cx="880" cy="90" r="2"/>
+    <circle cx="320" cy="245" r="2"/>
+    <circle cx="880" cy="245" r="2"/>
+    <circle cx="450" cy="168" r="1.5"/>
+    <circle cx="750" cy="168" r="1.5"/>
+  </g>
+
+  <!-- Title: o-culty -->
+  <text x="600" y="148" text-anchor="middle" font-family="'Courier New', monospace" font-size="82" font-weight="bold" fill="#ece8f8" filter="url(#glow-title)" letter-spacing="8">
+    o-culty
+  </text>
+
+  <!-- Subtitle -->
+  <text x="600" y="195" text-anchor="middle" font-family="'Courier New', monospace" font-size="14" fill="#6b6b8d" letter-spacing="8">
+    OCCULT TEXT MINING PIPELINE
+  </text>
+
+  <!-- Bottom pipeline flow -->
+  <g transform="translate(600, 280)" text-anchor="middle" font-family="monospace" font-size="10">
+    <text x="-320" fill="#4a6a4a" opacity="0.5">scrape</text>
+    <text x="-240" fill="#3a3a5a" opacity="0.35">&#x2192;</text>
+    <text x="-170" fill="#4a5a6a" opacity="0.5">extract</text>
+    <text x="-90" fill="#3a3a5a" opacity="0.35">&#x2192;</text>
+    <text x="-20" fill="#5a4a6a" opacity="0.5">clean</text>
+    <text x="50" fill="#3a3a5a" opacity="0.35">&#x2192;</text>
+    <text x="120" fill="#6a4a5a" opacity="0.5">embed</text>
+    <text x="195" fill="#3a3a5a" opacity="0.35">&#x2192;</text>
+    <text x="270" fill="#6a5a4a" opacity="0.5">cluster</text>
+    <text x="345" fill="#3a3a5a" opacity="0.35">&#x2192;</text>
+    <text x="410" fill="#4a6a5a" opacity="0.5">serve</text>
+  </g>
+
+  <!-- Corner accents -->
+  <g stroke="#2a1a4a" stroke-width="0.8" fill="none" opacity="0.3">
+    <path d="M 2,30 L 2,2 L 30,2"/>
+    <path d="M 1170,2 L 1198,2 L 1198,30"/>
+    <path d="M 2,310 L 2,338 L 30,338"/>
+    <path d="M 1170,338 L 1198,338 L 1198,310"/>
+  </g>
+
+  <!-- Thin border -->
+  <rect x="1" y="1" width="1198" height="338" fill="none" stroke="#12121e" stroke-width="1"/>
+
+  </g>
+</svg>
