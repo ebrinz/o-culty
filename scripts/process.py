@@ -16,7 +16,7 @@ logging.basicConfig(level=logging.WARNING, format="%(asctime)s %(name)s %(leveln
 logger = logging.getLogger(__name__)
 
 
-def process_file(path: Path, config: dict) -> dict | None:
+def process_file(path: Path, config: dict, no_ocr: bool = False) -> dict | None:
     suffix = path.suffix.lower()
     qg = config.get("processing", {}).get("quality_gate", {})
     min_len = qg.get("min_text_length", 200)
@@ -34,7 +34,7 @@ def process_file(path: Path, config: dict) -> dict | None:
             chapters = []
 
             # Quality gate: if text-based extraction looks garbled or empty, try OCR
-            if result["is_scanned"] or is_garbled(text, max_garble):
+            if not no_ocr and (result["is_scanned"] or is_garbled(text, max_garble)):
                 languages = config.get("processing", {}).get("ocr_languages", ["en", "la"])
                 ocr_result = ocr_pdf(path, languages)
                 # Use OCR if it produced more usable text
@@ -84,10 +84,17 @@ def build_metadata(file_path: Path, source_name: str, manifest_entry: dict, proc
     }
 
 
-def dedup_check(title: str, existing_titles: dict[str, str], threshold: float = 0.85) -> str | None:
-    normalized = normalize_title(title)
-    for existing_id, existing_title in existing_titles.items():
-        if is_duplicate(normalized, existing_title, threshold):
+def content_hash(text: str) -> str:
+    """Hash first 2000 chars of normalized text for dedup."""
+    import hashlib
+    sample = text.strip()[:2000].lower()
+    return hashlib.sha256(sample.encode()).hexdigest()
+
+
+def dedup_check(text_hash: str, existing_hashes: dict[str, str]) -> str | None:
+    """Check if content hash already exists."""
+    for existing_id, existing_hash in existing_hashes.items():
+        if text_hash == existing_hash:
             return existing_id
     return None
 
@@ -96,12 +103,13 @@ def main():
     parser = argparse.ArgumentParser(description="Process raw files into clean text")
     parser.add_argument("--config", type=Path, default=None)
     parser.add_argument("--source", default="all")
+    parser.add_argument("--no-ocr", action="store_true", help="Skip OCR for scanned PDFs (fast text-only pass)")
     args = parser.parse_args()
     config = load_config(args.config)
     raw_dir = Path("data/raw")
     out_dir = Path("data/processed")
     out_dir.mkdir(parents=True, exist_ok=True)
-    existing_titles: dict[str, str] = {}
+    seen_hashes: dict[str, str] = {}
 
     sources = [d for d in sorted(raw_dir.iterdir()) if d.is_dir()] if args.source == "all" else [raw_dir / args.source]
 
@@ -118,32 +126,39 @@ def main():
 
         files = sorted(
             f for f in source_dir.rglob("*")
-            if f.suffix.lower() in (".html", ".htm", ".pdf", ".txt") and f.name != "manifest.json"
+            if f.is_file() and f.suffix.lower() in (".html", ".htm", ".pdf", ".txt") and f.name != "manifest.json"
         )
 
         for file_path in tqdm(files, desc=f"Processing {source_name}"):
+            # Build a unique text_id using relative path to avoid collisions
+            rel_parts = file_path.relative_to(source_dir).with_suffix("").parts
+            text_id = f"{source_name}_{'_'.join(rel_parts)}"
             # Skip if already processed
-            rel_key = str(file_path.relative_to(source_dir)).split("/")[0]
-            manifest_entry = manifest.get(rel_key, {})
-            title = manifest_entry.get("title", file_path.stem)
-            text_id = f"{source_name}_{file_path.stem}"
             if (out_dir / f"{text_id}.txt").exists():
                 continue
 
-            result = process_file(file_path, config)
+            rel_key = str(file_path.relative_to(source_dir)).split("/")[0]
+            # Try with and without extension for manifest lookup
+            manifest_entry = manifest.get(rel_key, {}) or manifest.get(Path(rel_key).stem, {})
+            title = manifest_entry.get("title", file_path.stem)
+
+            result = process_file(file_path, config, no_ocr=args.no_ocr)
             if result is None:
                 stats["skipped_quality"] += 1
                 continue
 
-            dup_of = dedup_check(title, existing_titles)
+            # Dedup by content hash (catches same text from different sources)
+            h = content_hash(result["text"])
+            dup_of = dedup_check(h, seen_hashes)
             if dup_of is not None:
                 stats["skipped_dup"] += 1
                 continue
 
             metadata = build_metadata(file_path, source_name, manifest_entry, result)
-            text_id = metadata["id"]
-            existing_titles[text_id] = normalize_title(title)
+            metadata["id"] = text_id
+            seen_hashes[text_id] = h
 
+            text_id = metadata["id"]
             text_file = out_dir / f"{text_id}.txt"
             meta_file = out_dir / f"{text_id}.json"
             text_file.write_text(result["text"], encoding="utf-8")

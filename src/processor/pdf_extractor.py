@@ -1,5 +1,9 @@
+import logging
 from pathlib import Path
 import fitz
+
+logger = logging.getLogger(__name__)
+
 
 def extract_text_from_pdf(path: Path) -> dict:
     path = Path(path)
