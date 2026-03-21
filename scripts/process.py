@@ -104,6 +104,7 @@ def main():
     parser.add_argument("--config", type=Path, default=None)
     parser.add_argument("--source", default="all")
     parser.add_argument("--no-ocr", action="store_true", help="Skip OCR for scanned PDFs (fast text-only pass)")
+    parser.add_argument("--skip-pdf", action="store_true", help="Skip PDF files entirely (process only txt/html)")
     args = parser.parse_args()
     config = load_config(args.config)
     raw_dir = Path("data/raw")
@@ -124,9 +125,10 @@ def main():
         if manifest_path.exists():
             manifest = json.loads(manifest_path.read_text()).get("items", {})
 
+        allowed_ext = {".html", ".htm", ".txt"} if args.skip_pdf else {".html", ".htm", ".pdf", ".txt"}
         files = sorted(
             f for f in source_dir.rglob("*")
-            if f.is_file() and f.suffix.lower() in (".html", ".htm", ".pdf", ".txt") and f.name != "manifest.json"
+            if f.is_file() and f.suffix.lower() in allowed_ext and f.name != "manifest.json"
         )
 
         for file_path in tqdm(files, desc=f"Processing {source_name}"):

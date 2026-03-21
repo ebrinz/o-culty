@@ -83,6 +83,6 @@ def is_garbled(text: str, max_ratio: float = 0.10) -> bool:
     lines = [l.strip() for l in sample.splitlines() if l.strip()]
     if len(lines) >= 10:
         sparse = sum(1 for l in lines if len(l) <= 3)
-        if (sparse / len(lines)) > 0.30:
+        if (sparse / len(lines)) > 0.50:
             return True
     return False

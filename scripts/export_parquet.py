@@ -32,6 +32,9 @@ OFF_TOPIC = [
     "denis fahey collection",
     "016 cd r&",
     "synarchy movement of empire",
+    "australian personal computer",
+    "ijelfeb",
+    "ijasrjun",
 ]
 
 
