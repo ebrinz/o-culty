@@ -44,18 +44,21 @@ def cmd_search(args, config):
 
 
 def cmd_cluster(args, config):
-    vectors, metadata = load_corpus("cluster")
+    vectors, metadata = load_corpus("search")
     results_dir = Path("data/results")
     results_dir.mkdir(parents=True, exist_ok=True)
 
     analysis_cfg = config.get("analysis", {})
-    labels = cluster_embeddings(
-        vectors, min_cluster_size=analysis_cfg.get("hdbscan_min_cluster_size", 10),
+    labels, reduced = cluster_embeddings(
+        vectors,
+        min_cluster_size=analysis_cfg.get("hdbscan_min_cluster_size", 10),
+        umap_n_neighbors=analysis_cfg.get("umap_n_neighbors", 15),
     )
+    np.save(results_dir / "umap_reduced.npy", reduced)
     cluster_labels_map = label_clusters(metadata["text"].tolist(), labels)
 
     metadata["cluster"] = labels
-    metadata.to_parquet(Path("data/embeddings/cluster/metadata.parquet"), index=False)
+    metadata.to_parquet(Path("data/embeddings/search/metadata.parquet"), index=False)
 
     n_clusters = len(set(labels)) - (1 if -1 in labels else 0)
     n_noise = (labels == -1).sum()

@@ -1,0 +1,142 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 300" width="1200" height="300">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0a0a0f"/>
+      <stop offset="50%" style="stop-color:#0d0d1a"/>
+      <stop offset="100%" style="stop-color:#0a0a0f"/>
+    </linearGradient>
+    <linearGradient id="glow" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#1a0a2e"/>
+      <stop offset="50%" style="stop-color:#2d1b4e"/>
+      <stop offset="100%" style="stop-color:#1a0a2e"/>
+    </linearGradient>
+    <filter id="blur">
+      <feGaussianBlur stdDeviation="2"/>
+    </filter>
+    <filter id="glow-filter">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <pattern id="matrix" width="20" height="20" patternUnits="userSpaceOnUse">
+      <rect width="20" height="20" fill="none"/>
+      <text x="2" y="14" font-family="monospace" font-size="10" fill="#1a2a1a" opacity="0.4">0</text>
+    </pattern>
+    <pattern id="matrix2" width="24" height="18" patternUnits="userSpaceOnUse" patternTransform="rotate(5)">
+      <rect width="24" height="18" fill="none"/>
+      <text x="3" y="13" font-family="monospace" font-size="9" fill="#1a1a2a" opacity="0.3">1</text>
+    </pattern>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="300" fill="url(#bg)"/>
+  <rect width="1200" height="300" fill="url(#matrix)" opacity="0.5"/>
+  <rect width="1200" height="300" fill="url(#matrix2)" opacity="0.4"/>
+
+  <!-- Horizontal glow line -->
+  <rect x="0" y="148" width="1200" height="4" fill="url(#glow)" opacity="0.6"/>
+  <rect x="100" y="149" width="1000" height="2" fill="#6b3fa0" opacity="0.3" filter="url(#blur)"/>
+
+  <!-- Falling matrix columns -->
+  <g opacity="0.15" font-family="monospace" font-size="11" fill="#4a9e4a">
+    <text x="80" y="30">A</text><text x="80" y="50">G</text><text x="80" y="70">R</text><text x="80" y="90">I</text><text x="80" y="110">P</text><text x="80" y="130">P</text><text x="80" y="150">A</text>
+    <text x="180" y="60">D</text><text x="180" y="80">E</text><text x="180" y="100">U</text><text x="180" y="120">S</text>
+    <text x="280" y="20">S</text><text x="280" y="40">O</text><text x="280" y="60">L</text><text x="280" y="80">V</text><text x="280" y="100">E</text>
+    <text x="920" y="40">C</text><text x="920" y="60">O</text><text x="920" y="80">A</text><text x="920" y="100">G</text><text x="920" y="120">U</text><text x="920" y="140">L</text><text x="920" y="160">A</text>
+    <text x="1020" y="50">A</text><text x="1020" y="70">Z</text><text x="1020" y="90">O</text><text x="1020" y="110">T</text><text x="1020" y="130">H</text>
+    <text x="1120" y="30">I</text><text x="1120" y="50">A</text><text x="1120" y="70">O</text>
+  </g>
+
+  <!-- Sigil: left hexagram -->
+  <g transform="translate(150, 150)" opacity="0.12" stroke="#8b5cf6" stroke-width="1" fill="none">
+    <polygon points="0,-55 47.6,27.5 -47.6,27.5"/>
+    <polygon points="0,55 47.6,-27.5 -47.6,-27.5"/>
+    <circle r="60"/>
+    <circle r="40"/>
+    <line x1="0" y1="-40" x2="0" y2="40"/>
+    <line x1="-34.6" y1="-20" x2="34.6" y2="20"/>
+    <line x1="-34.6" y1="20" x2="34.6" y2="-20"/>
+  </g>
+
+  <!-- Sigil: right circle with cross -->
+  <g transform="translate(1050, 150)" opacity="0.12" stroke="#8b5cf6" stroke-width="1" fill="none">
+    <circle r="55"/>
+    <circle r="35"/>
+    <circle r="15"/>
+    <line x1="0" y1="-55" x2="0" y2="55"/>
+    <line x1="-55" y1="0" x2="55" y2="0"/>
+    <line x1="-38.9" y1="-38.9" x2="38.9" y2="38.9"/>
+    <line x1="38.9" y1="-38.9" x2="-38.9" y2="38.9"/>
+  </g>
+
+  <!-- Cube wireframes -->
+  <g opacity="0.08" stroke="#6366f1" stroke-width="0.8" fill="none">
+    <!-- Left cube -->
+    <g transform="translate(350, 80)">
+      <rect x="0" y="0" width="30" height="30"/>
+      <rect x="10" y="-10" width="30" height="30"/>
+      <line x1="0" y1="0" x2="10" y2="-10"/>
+      <line x1="30" y1="0" x2="40" y2="-10"/>
+      <line x1="30" y1="30" x2="40" y2="20"/>
+      <line x1="0" y1="30" x2="10" y2="20"/>
+    </g>
+    <!-- Right cube -->
+    <g transform="translate(820, 200)">
+      <rect x="0" y="0" width="25" height="25"/>
+      <rect x="8" y="-8" width="25" height="25"/>
+      <line x1="0" y1="0" x2="8" y2="-8"/>
+      <line x1="25" y1="0" x2="33" y2="-8"/>
+      <line x1="25" y1="25" x2="33" y2="17"/>
+      <line x1="0" y1="25" x2="8" y2="17"/>
+    </g>
+    <!-- Center cube -->
+    <g transform="translate(585, 220)">
+      <rect x="0" y="0" width="20" height="20"/>
+      <rect x="7" y="-7" width="20" height="20"/>
+      <line x1="0" y1="0" x2="7" y2="-7"/>
+      <line x1="20" y1="0" x2="27" y2="-7"/>
+      <line x1="20" y1="20" x2="27" y2="13"/>
+      <line x1="0" y1="20" x2="7" y2="13"/>
+    </g>
+  </g>
+
+  <!-- Scattered data fragments -->
+  <g font-family="monospace" font-size="8" fill="#3b3b5c" opacity="0.35">
+    <text x="320" y="45">0x7f3a</text>
+    <text x="450" y="260">sha256</text>
+    <text x="700" y="35">parquet</text>
+    <text x="780" y="270">6268 docs</text>
+    <text x="400" y="280">305M chars</text>
+    <text x="850" y="45">zstd</text>
+    <text x="500" y="30">embedding</text>
+    <text x="680" y="275">corpus</text>
+  </g>
+
+  <!-- Title -->
+  <text x="600" y="130" text-anchor="middle" font-family="'Courier New', monospace" font-size="72" font-weight="bold" fill="#e2e0f0" filter="url(#glow-filter)" letter-spacing="12">
+    text-cult
+  </text>
+
+  <!-- Subtitle -->
+  <text x="600" y="175" text-anchor="middle" font-family="'Courier New', monospace" font-size="16" fill="#6b6b8d" letter-spacing="6">
+    OCCULT &amp; ESOTERIC TEXT CORPUS
+  </text>
+
+  <!-- Bottom stats line -->
+  <g font-family="monospace" font-size="11" fill="#4a4a6a" text-anchor="middle">
+    <text x="400" y="240">alchemy</text>
+    <text x="460" y="240" fill="#2a2a3a">|</text>
+    <text x="520" y="240">hermetica</text>
+    <text x="580" y="240" fill="#2a2a3a">|</text>
+    <text x="640" y="240">kabbalah</text>
+    <text x="700" y="240" fill="#2a2a3a">|</text>
+    <text x="760" y="240">grimoires</text>
+    <text x="820" y="240" fill="#2a2a3a">|</text>
+    <text x="880" y="240">gnosis</text>
+  </g>
+
+  <!-- Thin border -->
+  <rect x="1" y="1" width="1198" height="298" fill="none" stroke="#1a1a2e" stroke-width="1"/>
+</svg>

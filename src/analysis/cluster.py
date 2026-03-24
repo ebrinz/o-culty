@@ -1,20 +1,29 @@
 import numpy as np
 from hdbscan import HDBSCAN
 from sklearn.feature_extraction.text import TfidfVectorizer
+from umap import UMAP
 
 
 def cluster_embeddings(
     vectors: np.ndarray,
     min_cluster_size: int = 10,
     min_samples: int | None = None,
-) -> np.ndarray:
+    umap_dim: int = 50,
+    umap_n_neighbors: int = 15,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Reduce with UMAP first, then cluster with HDBSCAN. Returns (labels, reduced_vectors)."""
+    print(f"  UMAP: {vectors.shape[1]}d -> {umap_dim}d ({vectors.shape[0]} points)...")
+    reducer = UMAP(n_components=umap_dim, n_neighbors=umap_n_neighbors, metric="cosine", verbose=True)
+    reduced = reducer.fit_transform(vectors)
+
+    print(f"  HDBSCAN: clustering {reduced.shape[0]} points in {umap_dim}d...")
     clusterer = HDBSCAN(
         min_cluster_size=min_cluster_size,
         min_samples=min_samples,
         metric="euclidean",
     )
-    labels = clusterer.fit_predict(vectors)
-    return labels
+    labels = clusterer.fit_predict(reduced)
+    return labels, reduced
 
 
 def label_clusters(
