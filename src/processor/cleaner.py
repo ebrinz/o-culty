@@ -13,6 +13,11 @@ def _strip_ocr_noise(text: str) -> str:
     cleaned = []
     for line in lines:
         stripped = line.strip()
+        # Blank lines are paragraph structure, not scan noise. They are shorter
+        # than the noise threshold below, so they need saying explicitly.
+        if not stripped:
+            cleaned.append(line)
+            continue
         # Drop lines that are just 1-2 non-alphanumeric chars or single letters
         if len(stripped) <= 2 and not re.match(r"^[A-Za-z0-9]{2}$", stripped):
             if not re.match(r"^[IVXLCDM]+$", stripped):  # keep roman numerals

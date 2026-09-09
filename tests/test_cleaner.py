@@ -108,3 +108,25 @@ def test_normalize_text_would_destroy_markdown_structure():
     """Why markdown needs its own normaliser rather than reusing normalize_text."""
     md = "# Heading\n\n-   nested\n    -   deeper\n"
     assert "    -   deeper" not in normalize_text(md)
+
+
+def test_normalize_text_preserves_paragraph_breaks():
+    """Blank lines are structure; _strip_ocr_noise used to delete every one."""
+    out = normalize_text("First paragraph.\n\nSecond paragraph.\n\nThird paragraph.")
+    assert out == "First paragraph.\n\nSecond paragraph.\n\nThird paragraph."
+
+
+def test_normalize_text_still_drops_scan_noise_between_paragraphs():
+    out = normalize_text("Real prose here.\n\n|\n\\\na\n\nMore real prose.")
+    assert "\n|\n" not in out
+    assert "\n\\\n" not in out
+    assert "Real prose here." in out
+    assert "More real prose." in out
+
+
+def test_normalize_text_keeps_roman_numerals():
+    assert "IV" in normalize_text("Chapter text.\n\nIV\n\nMore chapter text.")
+
+
+def test_normalize_text_collapses_long_blank_runs():
+    assert normalize_text("alpha\n\n\n\n\n\nbeta") == "alpha\n\nbeta"
