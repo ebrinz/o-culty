@@ -3,7 +3,6 @@ import json
 import traceback
 from datetime import datetime, timezone
 import yaml
-import torch
 
 
 def load_config(path: Path | None = None) -> dict:
@@ -36,6 +35,10 @@ def log_error(stage: str, source: str, item_id: str, error: Exception, errors_di
 def get_device(device_config: str = "auto") -> str:
     if device_config != "auto":
         return device_config
+    # Imported lazily so the scraping and processing stages, which share this
+    # module but never touch a GPU, don't require the ML stack to be installed.
+    import torch
+
     if torch.backends.mps.is_available():
         return "mps"
     if torch.cuda.is_available():
