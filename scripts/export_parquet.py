@@ -115,6 +115,7 @@ def main():
             "source_url": _str(meta.get("source_url", "")),
             "language": _str(meta.get("language", "en")),
             "file_type": _str(meta.get("file_type", "")),
+            "text_format": _str(meta.get("text_format"), "text") or "text",
             "ocr_used": bool(meta.get("ocr_used", False)),
             "char_count": int(meta.get("char_count", len(text))),
         })
@@ -132,6 +133,7 @@ def main():
         ("source_url", pa.string()),
         ("language", pa.string()),
         ("file_type", pa.string()),
+        ("text_format", pa.string()),
         ("ocr_used", pa.bool_()),
         ("char_count", pa.int64()),
     ])

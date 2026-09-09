@@ -13,6 +13,9 @@ scraping:
     search_terms: [occult, alchemy, hermetic, magic]
 
 processing:
+  # PDFs are converted by docling (layout + tables + OCR) into markdown.
+  # Pass --no-docling to process.py for a fast PyMuPDF plain-text pass instead.
+  # ocr_engine: easyocr | tesseract | tesseract_cli | rapidocr | ocrmac
   ocr_engine: easyocr
   ocr_languages: [en, la]
   quality_gate:

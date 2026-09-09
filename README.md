@@ -18,6 +18,12 @@ scrape → extract → clean → embed → cluster → serve
 
 **Sources:** Project Gutenberg, Sacred Texts, Internet Archive, Hermetic Library, Esoteric Archives
 
+**PDF extraction:** [Docling](https://github.com/docling-project/docling) converts PDFs with layout
+analysis, table-structure recognition and OCR in one pass, emitting markdown so headings, tables and
+reading order survive into the corpus. Rows carry a `text_format` column (`markdown` or `text`).
+PyMuPDF remains the fallback when docling is unavailable or fails on a document, and is selectable
+with `--no-docling`. Docling downloads its layout models from HuggingFace on first run.
+
 **Output:** Deduplicated Parquet dataset on [HuggingFace](https://huggingface.co/datasets/ebrinz/text-cult) — 8,334 texts, 1.45B characters across 27 traditions.
 
 ## Setup
@@ -35,8 +41,9 @@ python scripts/scrape_sacred_texts.py
 python scripts/scrape_internet_archive.py
 
 # Process raw files into clean text
-python scripts/process.py              # full run with OCR
-python scripts/process.py --no-ocr     # fast text-only pass
+python scripts/process.py                 # full run: docling PDFs + OCR
+python scripts/process.py --no-ocr        # skip OCR of scanned pages
+python scripts/process.py --no-docling    # fast PyMuPDF plain-text pass
 
 # Export to Parquet
 python scripts/export_parquet.py

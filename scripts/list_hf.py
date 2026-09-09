@@ -26,7 +26,7 @@ DEFAULT_LOCAL = Path("data/corpus.parquet")
 # Everything except `text` — see module docstring.
 LIST_COLUMNS = [
     "id", "title", "author", "tradition", "source",
-    "source_url", "language", "file_type", "ocr_used", "char_count",
+    "source_url", "language", "file_type", "text_format", "ocr_used", "char_count",
 ]
 DISPLAY_COLUMNS = ["title", "author", "tradition", "source", "language", "char_count"]
 

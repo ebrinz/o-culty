@@ -1,5 +1,8 @@
 import pytest
-from src.processor.cleaner import normalize_text, detect_language, is_duplicate, normalize_title, is_garbled
+from src.processor.cleaner import (
+    normalize_text, detect_language, is_duplicate, normalize_title, is_garbled,
+    normalize_markdown, strip_markdown_syntax,
+)
 
 def test_normalize_unicode():
     assert "fi" in normalize_text("ﬁrst")
@@ -45,3 +48,63 @@ def test_is_garbled_broken_encoding():
 
 def test_is_garbled_empty():
     assert is_garbled("") is True
+
+
+MARKDOWN_TABLE = """## Table of Planetary Correspondences
+
+| Planet | Metal | Day |
+|--------|-------|-----|
+| Sol | Gold | Sunday |
+| Luna | Silver | Monday |
+| Mars | Iron | Tuesday |
+| Venus | Copper | Friday |
+"""
+
+
+def test_is_garbled_rejects_markdown_table_without_the_flag():
+    """Guards the reason the flag exists: pipes read as encoding damage."""
+    assert is_garbled(MARKDOWN_TABLE) is True
+
+
+def test_is_garbled_accepts_markdown_table_with_the_flag():
+    assert is_garbled(MARKDOWN_TABLE, markdown=True) is False
+
+
+def test_is_garbled_still_catches_garbage_in_markdown_mode():
+    assert is_garbled("\x00�� �{}<>\\^~ ��� ��" * 20, markdown=True) is True
+
+
+def test_is_garbled_markdown_mode_rejects_syntax_only_input():
+    assert is_garbled("# \n\n| |\n|---|\n", markdown=True) is True
+
+
+def test_strip_markdown_syntax_keeps_prose():
+    stripped = strip_markdown_syntax("## Heading\n\n- a bullet\n\n[label](http://x)\n\n`code`\n")
+    assert "Heading" in stripped
+    assert "a bullet" in stripped
+    assert "label" in stripped
+    assert "http://x" not in stripped
+    assert "#" not in stripped
+
+
+def test_strip_markdown_syntax_drops_docling_image_placeholders():
+    assert "image" not in strip_markdown_syntax("Text before\n\n<!-- image -->\n\nText after")
+
+
+def test_normalize_markdown_preserves_structure():
+    md = "# Heading\n\n| a | b |\n|---|---|\n| 1 | 2 |\n\n-   nested\n    -   deeper\n"
+    out = normalize_markdown(md)
+    assert "# Heading" in out
+    assert "| a | b |" in out
+    assert "    -   deeper" in out
+
+
+def test_normalize_markdown_collapses_blank_lines_and_trailing_space():
+    out = normalize_markdown("a   \n\n\n\n\nb")
+    assert out == "a\n\nb"
+
+
+def test_normalize_text_would_destroy_markdown_structure():
+    """Why markdown needs its own normaliser rather than reusing normalize_text."""
+    md = "# Heading\n\n-   nested\n    -   deeper\n"
+    assert "    -   deeper" not in normalize_text(md)

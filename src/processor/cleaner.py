@@ -35,6 +35,44 @@ def normalize_text(text: str) -> str:
     text = re.sub(r"\n{3,}", "\n\n", text)
     return text.strip()
 
+def normalize_markdown(text: str) -> str:
+    """Tidy markdown without flattening the structure the extractor captured.
+
+    normalize_text() strips each line's leading whitespace and drops very short
+    lines, which would destroy nested lists, table rows and heading markers. So
+    markdown gets a gentler pass: unicode normalisation, de-hyphenation, page
+    numbers, trailing whitespace and runs of blank lines.
+    """
+    text = unicodedata.normalize("NFKC", text)
+    text = _rejoin_hyphenated(text)
+    text = re.sub(r"\n\s*\d{1,4}\s*\n", "\n\n", text)
+    text = "\n".join(line.rstrip() for line in text.splitlines())
+    text = re.sub(r"\n{3,}", "\n\n", text)
+    return text.strip()
+
+
+# Table separator rows ("|---|:--:|") carry no prose and are all "weird" chars.
+_MD_TABLE_SEPARATOR_RE = re.compile(r"^\s*\|?[\s:|-]{3,}\|?\s*$", re.M)
+
+
+def strip_markdown_syntax(text: str) -> str:
+    """Reduce markdown to its prose, so text-quality checks judge words not syntax.
+
+    Table pipes and link brackets are exactly the characters is_garbled() counts
+    as encoding damage, so a well-extracted table would otherwise look garbled.
+    """
+    text = re.sub(r"```.*?```", " ", text, flags=re.S)
+    text = re.sub(r"<!--.*?-->", " ", text, flags=re.S)
+    text = re.sub(r"!?\[([^\]]*)\]\([^)]*\)", r"\1", text)
+    text = _MD_TABLE_SEPARATOR_RE.sub("", text)
+    text = re.sub(r"^\s{0,3}#{1,6}\s*", "", text, flags=re.M)
+    text = re.sub(r"^\s*[-*+]\s+", "", text, flags=re.M)
+    text = re.sub(r"^\s*\d+\.\s+", "", text, flags=re.M)
+    text = re.sub(r"[*_`]", "", text)
+    text = text.replace("|", " ")
+    return text
+
+
 _LATIN_WORDS = {
     "et", "est", "in", "non", "sed", "ad", "per", "cum", "vel", "enim",
     "autem", "quod", "qui", "quae", "quam", "quis", "omnis", "omnia",
@@ -67,14 +105,22 @@ def is_duplicate(title_a: str, title_b: str, threshold: float = 0.85) -> bool:
     return levenshtein_ratio(a, b) >= threshold
 
 
-def is_garbled(text: str, max_ratio: float = 0.10) -> bool:
+def is_garbled(text: str, max_ratio: float = 0.10, markdown: bool = False) -> bool:
     """Check if extracted text is garbled (broken font encoding, OCR garbage).
 
     Looks at ratio of non-printable / unusual characters AND ratio of sparse
     lines (1-3 chars) which indicate OCR scan noise.
+
+    Set markdown=True for structured extractions: table pipes and link brackets
+    are counted as encoding damage, so a cleanly extracted table would otherwise
+    be rejected as garbage.
     """
     if not text:
         return True
+    if markdown:
+        text = strip_markdown_syntax(text)
+        if not text.strip():
+            return True
     sample = text[:2000]
     weird = sum(1 for c in sample if ord(c) > 127 or c in "£¬|»«®©™{}[]<>\\^~`")
     if (weird / len(sample)) > max_ratio:

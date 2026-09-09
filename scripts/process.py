@@ -8,15 +8,50 @@ from tqdm import tqdm
 
 from src.utils import load_config, log_error
 from src.processor.html_extractor import extract_text_from_html
-from src.processor.pdf_extractor import extract_text_from_pdf, is_scanned_pdf
-from src.processor.ocr import ocr_pdf
-from src.processor.cleaner import normalize_text, detect_language, is_duplicate, normalize_title, is_garbled
+from src.processor.pdf_extractor import extract_text_from_pdf
+from src.processor.docling_extractor import extract_markdown_from_pdf, DoclingUnavailable
+from src.processor.cleaner import (
+    normalize_text, normalize_markdown, detect_language, is_duplicate, normalize_title,
+    is_garbled, strip_markdown_syntax,
+)
 
 logging.basicConfig(level=logging.WARNING, format="%(asctime)s %(name)s %(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
 
 
-def process_file(path: Path, config: dict, no_ocr: bool = False) -> dict | None:
+def extract_pdf(path: Path, config: dict, no_ocr: bool = False, use_docling: bool = True) -> dict:
+    """Extract a PDF, preferring docling's layout-aware markdown.
+
+    Falls back to the PyMuPDF text dump when docling is missing or fails on a
+    document, so a single unconvertible PDF costs structure rather than the
+    whole document. The fallback has no OCR of its own: a scanned PDF that
+    reaches it will produce little text and be caught by the quality gate.
+    """
+    processing = config.get("processing", {})
+    if use_docling:
+        try:
+            return extract_markdown_from_pdf(
+                path,
+                do_ocr=not no_ocr,
+                ocr_engine=processing.get("ocr_engine", "easyocr"),
+                languages=processing.get("ocr_languages", ["en"]),
+            )
+        except DoclingUnavailable as e:
+            logger.warning("docling unavailable, using PyMuPDF: %s", e)
+        except Exception as e:
+            logger.warning("docling failed on %s, using PyMuPDF: %s", path.name, e)
+            log_error("processing", str(path.parent.name), str(path.name), e)
+
+    result = extract_text_from_pdf(path)
+    return {
+        "text": result["text"],
+        "page_count": result["page_count"],
+        "ocr_used": False,
+        "text_format": "text",
+    }
+
+
+def process_file(path: Path, config: dict, no_ocr: bool = False, use_docling: bool = True) -> dict | None:
     suffix = path.suffix.lower()
     qg = config.get("processing", {}).get("quality_gate", {})
     min_len = qg.get("min_text_length", 200)
@@ -28,40 +63,37 @@ def process_file(path: Path, config: dict, no_ocr: bool = False) -> dict | None:
             text = result["text"]
             chapters = result["chapters"]
             ocr_used = False
+            text_format = "text"
         elif suffix == ".pdf":
-            result = extract_text_from_pdf(path)
+            result = extract_pdf(path, config, no_ocr=no_ocr, use_docling=use_docling)
             text = result["text"]
             chapters = []
-
-            # Quality gate: if text-based extraction looks garbled or empty, try OCR
-            if not no_ocr and (result["is_scanned"] or is_garbled(text, max_garble)):
-                languages = config.get("processing", {}).get("ocr_languages", ["en", "la"])
-                ocr_result = ocr_pdf(path, languages)
-                # Use OCR if it produced more usable text
-                if len(ocr_result["text"].strip()) > len(text.strip()):
-                    text = ocr_result["text"]
-                ocr_used = True
-            else:
-                ocr_used = False
+            ocr_used = result["ocr_used"]
+            text_format = result["text_format"]
         elif suffix == ".txt":
             text = path.read_text(encoding="utf-8", errors="replace")
             chapters = []
             ocr_used = False
+            text_format = "text"
         else:
             return None
 
-        text = normalize_text(text)
+        is_markdown = text_format == "markdown"
+        text = normalize_markdown(text) if is_markdown else normalize_text(text)
 
-        # Quality gate: skip if too short or still garbled after OCR
+        # Quality gate: skip if too short or garbled
         if len(text.strip()) < min_len:
             return None
-        if is_garbled(text, max_garble):
+        if is_garbled(text, max_garble, markdown=is_markdown):
             log_error("processing", str(path.parent.name), str(path.name),
                       ValueError(f"Text still garbled after extraction (ratio > {max_garble})"))
             return None
 
-        language = detect_language(text[:1000])
-        return {"text": text, "chapters": chapters, "language": language, "ocr_used": ocr_used}
+        # Language detection needs prose: markdown scaffolding is not English.
+        sample = strip_markdown_syntax(text) if is_markdown else text
+        language = detect_language(sample[:1000])
+        return {"text": text, "chapters": chapters, "language": language,
+                "ocr_used": ocr_used, "text_format": text_format}
     except Exception as e:
         log_error("processing", str(path.parent.name), str(path.name), e)
         return None
@@ -105,6 +137,7 @@ def build_metadata(file_path: Path, source_name: str, manifest_entry: dict, proc
         "source_url": manifest_entry.get("source_url", ""),
         "file_type": file_path.suffix.lstrip("."),
         "ocr_used": processing_result["ocr_used"],
+        "text_format": processing_result.get("text_format", "text"),
         "language": processing_result["language"],
         "chapters": processing_result["chapters"],
         "char_count": len(processing_result["text"]),
@@ -132,6 +165,8 @@ def main():
     parser.add_argument("--source", default="all")
     parser.add_argument("--no-ocr", action="store_true", help="Skip OCR for scanned PDFs (fast text-only pass)")
     parser.add_argument("--skip-pdf", action="store_true", help="Skip PDF files entirely (process only txt/html)")
+    parser.add_argument("--no-docling", action="store_true",
+                        help="Extract PDFs with PyMuPDF instead of docling (faster, plain text, no OCR)")
     args = parser.parse_args()
     config = load_config(args.config)
     raw_dir = Path("data/raw")
@@ -168,7 +203,7 @@ def main():
 
             manifest_entry = manifest_lookup(manifest, file_path.relative_to(source_dir))
 
-            result = process_file(file_path, config, no_ocr=args.no_ocr)
+            result = process_file(file_path, config, no_ocr=args.no_ocr, use_docling=not args.no_docling)
             if result is None:
                 stats["skipped_quality"] += 1
                 continue
