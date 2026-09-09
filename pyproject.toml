@@ -17,6 +17,7 @@ dependencies = [
     "numpy>=1.26",
     "pandas>=2.1",
     "pyarrow>=14.0",
+    "huggingface-hub>=0.23",
     "hdbscan>=0.8",
     "umap-learn>=0.5",
     "plotly>=5.18",
