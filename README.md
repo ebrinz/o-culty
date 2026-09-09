@@ -40,7 +40,38 @@ python scripts/process.py --no-ocr     # fast text-only pass
 
 # Export to Parquet
 python scripts/export_parquet.py
+
+# List what's in the corpus, and what the HF account can see
+python scripts/list_hf.py texts --stats
+python scripts/list_hf.py repos
 ```
+
+## Listing
+
+`scripts/list_hf.py` reads the corpus without downloading it. The `text` column holds
+~1.45B characters, so the listing is column-pruned and never fetches it.
+
+```bash
+# Documents on the hub, newest export
+python scripts/list_hf.py texts --tradition kabbalah --sort char_count --desc --limit 20
+
+# Counts by source / tradition / language
+python scripts/list_hf.py texts --stats
+
+# Machine-readable, straight to a file
+python scripts/list_hf.py texts --format csv --out data/titles.csv
+
+# A local export instead of the hub
+python scripts/list_hf.py texts --local data/corpus.parquet
+
+# Repos the account can reach — private ones included once logged in
+huggingface-cli login
+python scripts/list_hf.py repos
+```
+
+Filters (`--tradition`, `--source`, `--author`, `--language`, `--title`) are
+case-insensitive substring matches. `--format` accepts `table`, `csv`, `tsv`,
+`json`, `jsonl`; `--columns` picks the fields.
 
 ## Corpus
 
