@@ -67,11 +67,38 @@ def process_file(path: Path, config: dict, no_ocr: bool = False) -> dict | None:
         return None
 
 
+def manifest_lookup(manifest: dict, rel_path: Path) -> dict:
+    """Find the manifest entry describing a raw file.
+
+    Scrapers key their manifests differently: sacred-texts stores one entry per
+    book directory ("alchemy/alc_arr_index.htm") holding many chapter files,
+    internet-archive one per item directory, gutenberg one per file id. Try the
+    containing directory before the file itself so nested layouts resolve.
+    """
+    candidates = []
+    if len(rel_path.parts) > 1:
+        candidates.append(str(rel_path.parent))
+        candidates.append(rel_path.parts[0])
+    candidates.append(str(rel_path.with_suffix("")))
+    candidates.append(rel_path.stem)
+    for key in candidates:
+        entry = manifest.get(key)
+        if entry:
+            return entry
+    return {}
+
+
+def resolve_title(file_path: Path, manifest_entry: dict) -> str:
+    """Per-chapter title where the scraper captured one, else the book title."""
+    chapter_titles = manifest_entry.get("chapter_titles") or {}
+    return chapter_titles.get(file_path.stem) or manifest_entry.get("title") or file_path.stem
+
+
 def build_metadata(file_path: Path, source_name: str, manifest_entry: dict, processing_result: dict) -> dict:
     text_id = f"{source_name}_{file_path.stem}"
     return {
         "id": text_id,
-        "title": manifest_entry.get("title", file_path.stem),
+        "title": resolve_title(file_path, manifest_entry),
         "author": manifest_entry.get("author", "unknown"),
         "tradition": manifest_entry.get("tradition", "unknown"),
         "source": source_name,
@@ -139,10 +166,7 @@ def main():
             if (out_dir / f"{text_id}.txt").exists():
                 continue
 
-            rel_key = str(file_path.relative_to(source_dir)).split("/")[0]
-            # Try with and without extension for manifest lookup
-            manifest_entry = manifest.get(rel_key, {}) or manifest.get(Path(rel_key).stem, {})
-            title = manifest_entry.get("title", file_path.stem)
+            manifest_entry = manifest_lookup(manifest, file_path.relative_to(source_dir))
 
             result = process_file(file_path, config, no_ocr=args.no_ocr)
             if result is None:
